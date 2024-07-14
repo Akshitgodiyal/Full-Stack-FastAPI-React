@@ -1,0 +1,92 @@
+services:
+  postgresdb:
+    container_name: POSTGRES_DB
+    image: stevecmd/devops-stage-2-postgresdb:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal-network
+    # restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: BACKEND
+    volumes:
+      - ./app/backend/:/app/backend/
+    env_file:
+      - ./backend/.env
+    image: stevecmd/devops-stage-2-backend:latest
+    environment:
+      POSTGRES_SERVER: postgresdb
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    # depends_on:
+    #   postgresdb:
+    #     condition: service_healthy
+    networks:
+      - internal-network
+    command: >
+      sh -c "python app/initial_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    container_name: FRONTEND
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: stevecmd/devops-stage-2-frontend:latest
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "5173:5173"
+    networks:
+      - internal-network
+    # depends_on:
+    #   - backend
+
+  adminer:
+    container_name: ADMINER
+    image: stevecmd/devops-stage-2-adminer:latest
+    ports:
+      - "8082:8080"
+    networks:
+      - internal-network
+
+  nginx-proxy-manager:
+    container_name: NGINX_PROXY_MANAGER
+    image: jc21/nginx-proxy-manager:latest
+    # restart: unless-stopped
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    ports:
+      - "8090:81" # Proxy Management UI
+      - "8080:80" # HTTP
+      - "8443:443" # HTTPS
+    # depends_on:
+    #   - frontend
+    #   - backend
+    networks:
+      - internal-network
+
+networks:
+  internal-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
