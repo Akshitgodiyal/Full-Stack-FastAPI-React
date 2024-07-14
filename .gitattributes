@@ -1,0 +1,5 @@
+echo "* text=auto" > .gitattributes
+echo "*.sh text eol=lf" >> .gitattributes
+echo "*.json text eol=lf" >> .gitattributes
+echo "*.ts text eol=lf" >> .gitattributes
+echo "package-lock.json text eol=lf" >> .gitattributes
