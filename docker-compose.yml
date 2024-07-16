@@ -1,29 +1,43 @@
 services:
   postgresdb:
-    container_name: POSTGRES_DB
+    container_name: postgresdb
     image: stevecmd/devops-stage-2-postgresdb:latest
+    env_file:
+      - ./backend/.env
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-network
-    # restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    env_file:
+      - ./backend/.env
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    # depends_on:
+    #   - postgresdb
+
   backend:
     build: ./backend
-    container_name: BACKEND
+    container_name: backend
     volumes:
-      - ./app/backend/:/app/backend/
+      - ./backend/:/app/backend/
     env_file:
       - ./backend/.env
     image: stevecmd/devops-stage-2-backend:latest
@@ -45,10 +59,12 @@ services:
       sh -c "python app/initial_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   frontend:
-    container_name: FRONTEND
+    container_name: frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    env_file:
+      - ./frontend/.env
     image: stevecmd/devops-stage-2-frontend:latest
     environment:
       VITE_API_URL: ${VITE_API_URL}
@@ -60,7 +76,7 @@ services:
     #   - backend
 
   adminer:
-    container_name: ADMINER
+    container_name: adminer
     image: stevecmd/devops-stage-2-adminer:latest
     ports:
       - "8082:8080"
@@ -68,9 +84,8 @@ services:
       - internal-network
 
   nginx-proxy-manager:
-    container_name: NGINX_PROXY_MANAGER
+    container_name: nginx-proxy-manager
     image: jc21/nginx-proxy-manager:latest
-    # restart: unless-stopped
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt

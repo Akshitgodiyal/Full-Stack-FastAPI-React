@@ -16,8 +16,11 @@ Welcome to the Full-Stack FastAPI and React template repository. This repository
 
 The repository is organized into two main directories:
 
-- **frontend**: Contains the ReactJS application.
-- **backend**: Contains the FastAPI application and PostgreSQL database integration.
+- **frontend**: Contains the ReactJS application. Handles user interface and client-side logic
+- **backend**: Handles server-side logic, APIs, and database interactions.
+- **Database (Postgres)**: Stores persistent data.
+- **Admin Tools (PGAdmin, Adminer)**: Provides tools to manage the database.
+- **Proxy Manager (NGINX)**: Manages HTTP/HTTPS traffic and routing.
 
 Each directory has its own README file with detailed instructions specific to that part of the application.
 
@@ -34,6 +37,29 @@ Before you begin, ensure you have the following installed:
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- Python
+
+## Tools
+- FastAPI with Uvicorn - Get and Post Data
+- SQLAlchemy + Alembic - used to interact with an SQL database in the background and migrate data to DB respectively.
+- PostgreSQL + PGAdmin - Postgres Database and web based visual to use the database.
+- Nginx Proxy Manager - Server Management Application
+- Docker / Docker compose - Setup individual containers.
+- Environment variables
+
+## Installation of required tools
+To install required tool, navigate to both `frontend` and `backend` folders then run: <br />
+`pip install -r requirements.txt`
+
+## Steps
+Create virtual environment: <br />
+`virtualenv env` or `python -m venv myvenv`
+
+Activate the virtual environment `myvenv` <br />
+`source env/bin/activate` or `source myvenv/Scripts/activate`
+
+When done, deactivate the environment: <br />
+`deactivate`
 
 ### Setup Development with Docker
 
@@ -53,10 +79,11 @@ To set up the development environment using Docker, follow these steps:
 
 After starting the application, you can access the following services:
 ```sh
-http://localhost:8080/adminer
-http://localhost:8000/redoc
-http://localhost:8000/docs
-http://localhost:5173/login
+Frontend - `http://localhost:5173/login`
+Nginx Proxy Manager - `http://localhost:8090/login`
+Adminer - `http://localhost:8082/adminer`
+Redoc - `http://localhost:8000/redoc`
+Docs - `http://localhost:8000/docs`
 ```
 
 ### Stop the application
