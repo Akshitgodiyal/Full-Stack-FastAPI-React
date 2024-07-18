@@ -22,8 +22,9 @@ declare module "@tanstack/react-router" {
   }
 }
 
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <StrictMode> 
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
